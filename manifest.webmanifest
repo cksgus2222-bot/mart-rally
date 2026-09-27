@@ -1,0 +1,10 @@
+{
+  "name": "마트 대소동! 카트 레이싱",
+  "short_name": "마트 대소동",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1b1b1b",
+  "theme_color": "#1b1b1b",
+  "icons": [{ "src": "icon.png", "sizes": "1024x1024", "type": "image/png" }]
+}

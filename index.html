@@ -4,6 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="theme-color" content="#1b1b1b">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="마트 대소동">
+    <link rel="apple-touch-icon" href="icon.png">
     <title>마트 대소동! 카트 레이싱</title>
     <meta name="description" content="거대한 마트를 쥐만 한 카트로 질주! 여사님이 되어 직원들의 공격을 피해 1등으로 골인하세요.">
     <meta property="og:title" content="마트 대소동! 카트 레이싱">
@@ -98,7 +104,7 @@
 
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover, viewport-fit=cover, viewport-fit=cover';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
@@ -127,6 +133,32 @@
         document.addEventListener("pointerup", goFull, true);
         document.addEventListener("touchend", goFull, true);
       }
+      if (navigator.maxTouchPoints > 0) {
+        var goFull = function () {
+          var el = document.documentElement;
+          if (document.fullscreenElement || document.webkitFullscreenElement) return;
+          var req = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (!req) return;
+          Promise.resolve(req.call(el, { navigationUI: "hide" })).then(function () {
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
+          }).catch(function () {});
+        };
+        document.addEventListener("pointerup", goFull, true);
+        document.addEventListener("touchend", goFull, true);
+      }
+      if (navigator.maxTouchPoints > 0) {
+        var goFull = function () {
+          var el = document.documentElement;
+          if (document.fullscreenElement || document.webkitFullscreenElement) return;
+          var req = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (!req) return;
+          Promise.resolve(req.call(el, { navigationUI: "hide" })).then(function () {
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
+          }).catch(function () {});
+        };
+        document.addEventListener("pointerup", goFull, true);
+        document.addEventListener("touchend", goFull, true);
+      }
       document.querySelector("#unity-loading-bar").style.display = "block";
 
       var script = document.createElement("script");
@@ -136,6 +168,36 @@
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
                 document.querySelector("#unity-loading-bar").style.display = "none";
+                (function () {
+                  var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
+                  M.devicePixelRatio = dpr;
+                  function tick(now) {
+                    frames++;
+                    if (now - last > 2500) {
+                      var fps = frames * 1000 / (now - last); frames = 0; last = now;
+                      if (fps < 30 && dpr > 1) dpr = Math.max(1, dpr - 0.25);
+                      else if (fps > 55 && dpr < maxDpr) dpr = Math.min(maxDpr, dpr + 0.25);
+                      M.devicePixelRatio = dpr;
+                    }
+                    requestAnimationFrame(tick);
+                  }
+                  requestAnimationFrame(tick);
+                })();
+                (function () {
+                  var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
+                  M.devicePixelRatio = dpr;
+                  function tick(now) {
+                    frames++;
+                    if (now - last > 2500) {
+                      var fps = frames * 1000 / (now - last); frames = 0; last = now;
+                      if (fps < 30 && dpr > 1) dpr = Math.max(1, dpr - 0.25);
+                      else if (fps > 55 && dpr < maxDpr) dpr = Math.min(maxDpr, dpr + 0.25);
+                      M.devicePixelRatio = dpr;
+                    }
+                    requestAnimationFrame(tick);
+                  }
+                  requestAnimationFrame(tick);
+                })();
                 (function () {
                   var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
                   M.devicePixelRatio = dpr;
