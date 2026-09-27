@@ -18,6 +18,36 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
+    <!-- In-app browsers (Instagram, KakaoTalk, Facebook...) block fullscreen and are short on memory:
+         bounce to the real browser where possible, otherwise explain how to get there. -->
+    <div id="inapp" style="display:none;position:fixed;inset:0;z-index:99;background:#1b1b1b;color:#fff;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:28px;box-sizing:border-box;flex-direction:column;justify-content:center;align-items:center;gap:14px">
+      <img src="icon.png" alt="" style="width:96px;height:96px;border-radius:22px">
+      <h2 style="margin:4px 0;font-size:22px;color:#ffc20e">마트 대소동! 카트 레이싱</h2>
+      <p id="inapp-msg" style="margin:0;font-size:15px;line-height:1.6;max-width:420px"></p>
+      <button id="inapp-copy" style="font-size:16px;font-weight:700;padding:12px 22px;border:0;border-radius:12px;background:#ffc20e;color:#222">링크 복사하기</button>
+      <button id="inapp-stay" style="font-size:13px;padding:8px 14px;border:1px solid #666;border-radius:10px;background:none;color:#bbb">그래도 여기서 하기</button>
+    </div>
+    <script>
+      (function () {
+        var ua = navigator.userAgent, url = location.href.split("#")[0];
+        if (!/Instagram|FBAN|FBAV|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp|Twitter|TikTok|musical_ly/i.test(ua)) return;
+        var android = /Android/i.test(ua), ios = /iPhone|iPad|iPod/i.test(ua);
+        if (/KAKAOTALK/i.test(ua)) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(url); }
+        else if (android) { location.href = "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(url) + ";end"; }
+        var box = document.getElementById("inapp");
+        document.getElementById("inapp-msg").innerHTML = ios
+          ? "인스타·카톡 같은 앱 안에서는 게임이 제대로 안 돌아가요.<br><b>오른쪽 위 ⋯ 버튼 → '외부 브라우저에서 열기'</b>를 눌러<br>Safari에서 열어주세요."
+          : "앱 안 브라우저에서는 게임이 제대로 안 돌아가요.<br><b>오른쪽 위 ⋮ 버튼 → '다른 브라우저로 열기'</b>를 눌러<br>Chrome에서 열어주세요.";
+        box.style.display = "flex";
+        document.getElementById("inapp-copy").onclick = function () {
+          var b = this;
+          (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { b.textContent = "복사됐어요! 브라우저 주소창에 붙여넣으세요"; },
+            function () { prompt("이 링크를 복사해서 브라우저에 붙여넣으세요", url); });
+        };
+        document.getElementById("inapp-stay").onclick = function () { box.style.display = "none"; };
+      })();
+    </script>
+
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -104,7 +134,7 @@
 
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover, viewport-fit=cover, viewport-fit=cover';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover, viewport-fit=cover, viewport-fit=cover, viewport-fit=cover';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
@@ -159,6 +189,19 @@
         document.addEventListener("pointerup", goFull, true);
         document.addEventListener("touchend", goFull, true);
       }
+      if (navigator.maxTouchPoints > 0) {
+        var goFull = function () {
+          var el = document.documentElement;
+          if (document.fullscreenElement || document.webkitFullscreenElement) return;
+          var req = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (!req) return;
+          Promise.resolve(req.call(el, { navigationUI: "hide" })).then(function () {
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
+          }).catch(function () {});
+        };
+        document.addEventListener("pointerup", goFull, true);
+        document.addEventListener("touchend", goFull, true);
+      }
       document.querySelector("#unity-loading-bar").style.display = "block";
 
       var script = document.createElement("script");
@@ -168,6 +211,21 @@
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
                 document.querySelector("#unity-loading-bar").style.display = "none";
+                (function () {
+                  var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
+                  M.devicePixelRatio = dpr;
+                  function tick(now) {
+                    frames++;
+                    if (now - last > 2500) {
+                      var fps = frames * 1000 / (now - last); frames = 0; last = now;
+                      if (fps < 30 && dpr > 1) dpr = Math.max(1, dpr - 0.25);
+                      else if (fps > 55 && dpr < maxDpr) dpr = Math.min(maxDpr, dpr + 0.25);
+                      M.devicePixelRatio = dpr;
+                    }
+                    requestAnimationFrame(tick);
+                  }
+                  requestAnimationFrame(tick);
+                })();
                 (function () {
                   var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
                   M.devicePixelRatio = dpr;
