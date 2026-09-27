@@ -104,7 +104,7 @@
 
         // To lower canvas resolution on mobile devices to gain some
         // performance, uncomment the following line:
-        config.devicePixelRatio = 1;
+        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
 
       } else {
@@ -122,6 +122,21 @@
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
                 document.querySelector("#unity-loading-bar").style.display = "none";
+                (function () {
+                  var M = unityInstance.Module, maxDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = maxDpr, frames = 0, last = performance.now();
+                  M.devicePixelRatio = dpr;
+                  function tick(now) {
+                    frames++;
+                    if (now - last > 2500) {
+                      var fps = frames * 1000 / (now - last); frames = 0; last = now;
+                      if (fps < 30 && dpr > 1) dpr = Math.max(1, dpr - 0.25);
+                      else if (fps > 55 && dpr < maxDpr) dpr = Math.min(maxDpr, dpr + 0.25);
+                      M.devicePixelRatio = dpr;
+                    }
+                    requestAnimationFrame(tick);
+                  }
+                  requestAnimationFrame(tick);
+                })();
                 document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
                 };
